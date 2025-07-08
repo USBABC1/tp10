@@ -1,4 +1,6 @@
 import jsPDF from 'jspdf';
+import logoImg from '../assets/logo.png';
+import bgImg from '../assets/bg.png';
 
 const PDFExporter = {
   generatePDF: async (formData) => {
@@ -17,25 +19,16 @@ const PDFExporter = {
       // Função para adicionar header profissional
       const addHeader = () => {
         // Background do header
-        pdf.setFillColor(5, 150, 105);
-        pdf.rect(0, 0, pageWidth, 35, 'F');
+        pdf.addImage(bgImg, 'PNG', 0, 0, pageWidth, pageHeight);
         
-        // Logo placeholder
-        pdf.setFillColor(255, 255, 255);
-        pdf.rect(margin, 8, 25, 20, 'F');
-        pdf.setFontSize(8);
-        pdf.setTextColor(5, 150, 105);
-        pdf.text('LOGO', margin + 10, 20);
+        // Logo
+        pdf.addImage(logoImg, 'PNG', margin, 8, 40, 20);
         
         // Título principal
         pdf.setFontSize(24);
         pdf.setFont('helvetica', 'bold');
         pdf.setTextColor(255, 255, 255);
-        pdf.text('TIO PAULO', margin + 35, 18);
-        
-        pdf.setFontSize(12);
-        pdf.setFont('helvetica', 'normal');
-        pdf.text('FICHA DE ANAMNESE ODONTOLÓGICA', margin + 35, 26);
+        pdf.text('FICHA DE ANAMNESE ODONTOLÓGICA', margin + 45, 20);
         
         return 45;
       };
@@ -140,7 +133,7 @@ const PDFExporter = {
       const addMapaDental = () => {
         if (!formData.mapa_dental || formData.mapa_dental.length === 0) return;
         
-        checkNewPage(60);
+        checkNewPage(100);
         
         // Título
         pdf.setFillColor(245, 245, 245);
@@ -151,7 +144,73 @@ const PDFExporter = {
         pdf.text('MAPA DENTAL', margin + 2, yPosition + 4);
         yPosition += 15;
         
-        // Legenda de condições
+        // Adicionar imagem do odontograma como base
+        const odontogramaBase = new Image();
+        odontogramaBase.src = '/home/ubuntu/upload/ODONTOGRAME.jpg'; // Caminho para a imagem do odontograma
+        pdf.addImage(odontogramaBase, 'JPEG', margin, yPosition, contentWidth, contentWidth * (odontogramaBase.height / odontogramaBase.width));
+        const odontogramaImageHeight = contentWidth * (odontogramaBase.height / odontogramaBase.width);
+
+        // Mapeamento de posições aproximadas para cada dente e superfície na imagem ODONTOGRAME.jpg
+        // Estes valores são aproximados e podem precisar de ajuste fino
+        const toothPositions = {
+          // Dentes permanentes superiores
+          18: { x: 16, y: 15, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          17: { x: 22, y: 15, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          16: { x: 28, y: 15, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          15: { x: 34, y: 15, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          14: { x: 40, y: 15, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          13: { x: 46, y: 15, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          12: { x: 52, y: 15, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          11: { x: 58, y: 15, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          21: { x: 64, y: 15, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          22: { x: 70, y: 15, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          23: { x: 76, y: 15, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          24: { x: 82, y: 15, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          25: { x: 88, y: 15, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          26: { x: 94, y: 15, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          27: { x: 100, y: 15, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          28: { x: 106, y: 15, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          // Dentes decíduos superiores
+          55: { x: 34, y: 35, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          54: { x: 40, y: 35, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          53: { x: 46, y: 35, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          52: { x: 52, y: 35, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          51: { x: 58, y: 35, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          61: { x: 64, y: 35, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          62: { x: 70, y: 35, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          63: { x: 76, y: 35, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          64: { x: 82, y: 35, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          65: { x: 88, y: 35, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          // Dentes decíduos inferiores
+          85: { x: 34, y: 65, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          84: { x: 40, y: 65, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          83: { x: 46, y: 65, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          82: { x: 52, y: 65, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          81: { x: 58, y: 65, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          71: { x: 64, y: 65, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          72: { x: 70, y: 65, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          73: { x: 76, y: 65, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          74: { x: 82, y: 65, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          75: { x: 88, y: 65, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          // Dentes permanentes inferiores
+          48: { x: 16, y: 85, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          47: { x: 22, y: 85, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          46: { x: 28, y: 85, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          45: { x: 34, y: 85, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          44: { x: 40, y: 85, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          43: { x: 46, y: 85, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          42: { x: 52, y: 85, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          41: { x: 58, y: 85, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          31: { x: 64, y: 85, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          32: { x: 70, y: 85, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          33: { x: 76, y: 85, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          34: { x: 82, y: 85, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          35: { x: 88, y: 85, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          36: { x: 94, y: 85, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          37: { x: 100, y: 85, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+          38: { x: 106, y: 85, surfaces: { oclusal: { dx: 2, dy: 2 }, mesial: { dx: 0, dy: 4 }, distal: { dx: 4, dy: 4 }, vestibular: { dx: 2, dy: 0 }, lingual: { dx: 2, dy: 4 } } },
+        };
+
         const condicoes = {
           carie: { color: [255, 0, 0], label: 'Cárie' },
           restauracao: { color: [0, 0, 255], label: 'Restauração' },
@@ -163,7 +222,25 @@ const PDFExporter = {
           fratura: { color: [255, 165, 0], label: 'Fratura' }
         };
         
-        // Desenhar legenda
+        // Desenhar as condições nos dentes
+        formData.mapa_dental.forEach(item => {
+          const toothInfo = toothPositions[item.tooth];
+          if (toothInfo && toothInfo.surfaces[item.surface]) {
+            const conditionData = condicoes[item.condition];
+            if (conditionData) {
+              const rectX = margin + toothInfo.x + toothInfo.surfaces[item.surface].dx;
+              const rectY = yPosition + toothInfo.y + toothInfo.surfaces[item.surface].dy;
+              const rectSize = 2; // Tamanho do quadrado para a superfície
+
+              pdf.setFillColor(...conditionData.color);
+              pdf.rect(rectX, rectY, rectSize, rectSize, 'F');
+            }
+          }
+        });
+
+        yPosition += odontogramaImageHeight + 10;
+
+        // Legenda de condições
         pdf.setFontSize(10);
         pdf.setFont('helvetica', 'bold');
         pdf.text('Legenda:', margin, yPosition);
@@ -197,7 +274,7 @@ const PDFExporter = {
           if (!groupedTeeth[item.condition]) {
             groupedTeeth[item.condition] = [];
           }
-          groupedTeeth[item.condition].push(item.tooth);
+          groupedTeeth[item.condition].push(`${item.tooth} (${item.surface})`);
         });
         
         Object.entries(groupedTeeth).forEach(([condition, teeth]) => {
@@ -211,7 +288,7 @@ const PDFExporter = {
             pdf.text(`${conditionData.label}:`, margin + 6, yPosition + 1);
             
             pdf.setFont('helvetica', 'normal');
-            const teethText = teeth.sort((a, b) => a - b).join(', ');
+            const teethText = teeth.sort().join(', ');
             pdf.text(teethText, margin + 40, yPosition + 1);
             
             yPosition += 6;
@@ -366,3 +443,4 @@ const PDFExporter = {
 };
 
 export default PDFExporter;
+

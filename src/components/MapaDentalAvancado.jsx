@@ -2,11 +2,12 @@ import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card.jsx';
 import { Button } from '@/components/ui/button.jsx';
 import { Textarea } from '@/components/ui/textarea.jsx';
-import { Smile, RotateCcw, Save } from 'lucide-react';
+import { Smile, RotateCcw } from 'lucide-react';
 
 const MapaDentalAvancado = ({ selectedTeeth = [], onTeethChange, observations = '', onObservationsChange }) => {
   const [selectedCondition, setSelectedCondition] = useState('carie');
-  
+  const [selectedSurface, setSelectedSurface] = useState(null); // Nova variável de estado para a superfície selecionada
+
   // Dentes permanentes
   const dentesSuperiores = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28];
   const dentesInferiores = [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38];
@@ -26,31 +27,35 @@ const MapaDentalAvancado = ({ selectedTeeth = [], onTeethChange, observations = 
     fratura: { color: 'bg-orange-500', label: 'Fratura', symbol: '⚡' }
   };
 
-  const handleToothClick = (toothNumber) => {
-    const existingIndex = selectedTeeth.findIndex(item => item.tooth === toothNumber);
+  const surfaces = ['oclusal', 'mesial', 'distal', 'vestibular', 'lingual'];
+
+  const handleSurfaceClick = (toothNumber, surface) => {
+    const key = `${toothNumber}-${surface}`;
+    const existingIndex = selectedTeeth.findIndex(item => item.key === key);
     
     if (existingIndex >= 0) {
-      // Se o dente já tem uma condição, atualiza ou remove
+      // Se a superfície já tem uma condição, atualiza ou remove
       const currentCondition = selectedTeeth[existingIndex].condition;
       if (currentCondition === selectedCondition) {
         // Remove se for a mesma condição
-        const newSelectedTeeth = selectedTeeth.filter(item => item.tooth !== toothNumber);
+        const newSelectedTeeth = selectedTeeth.filter(item => item.key !== key);
         onTeethChange(newSelectedTeeth);
       } else {
         // Atualiza a condição
         const newSelectedTeeth = [...selectedTeeth];
-        newSelectedTeeth[existingIndex] = { tooth: toothNumber, condition: selectedCondition };
+        newSelectedTeeth[existingIndex] = { key, tooth: toothNumber, surface, condition: selectedCondition };
         onTeethChange(newSelectedTeeth);
       }
     } else {
       // Adiciona nova condição
-      const newSelectedTeeth = [...selectedTeeth, { tooth: toothNumber, condition: selectedCondition }];
+      const newSelectedTeeth = [...selectedTeeth, { key, tooth: toothNumber, surface, condition: selectedCondition }];
       onTeethChange(newSelectedTeeth);
     }
   };
 
-  const getToothCondition = (toothNumber) => {
-    const toothData = selectedTeeth.find(item => item.tooth === toothNumber);
+  const getSurfaceCondition = (toothNumber, surface) => {
+    const key = `${toothNumber}-${surface}`;
+    const toothData = selectedTeeth.find(item => item.key === key);
     return toothData ? toothData.condition : null;
   };
 
@@ -59,48 +64,60 @@ const MapaDentalAvancado = ({ selectedTeeth = [], onTeethChange, observations = 
   };
 
   const renderTooth = (toothNumber, isDeciduous = false) => {
-    const condition = getToothCondition(toothNumber);
-    const conditionData = condition ? condicoes[condition] : null;
-    
     return (
       <div key={toothNumber} className="flex flex-col items-center group">
         <div className="text-xs text-white/80 mb-1 font-medium">
           {toothNumber}
         </div>
-        <button
-          onClick={() => handleToothClick(toothNumber)}
+        <div
           className={`
-            relative w-10 h-12 rounded-lg border-2 transition-all duration-200 transform hover:scale-110
-            ${conditionData 
-              ? `${conditionData.color} border-white/50 shadow-lg` 
-              : isDeciduous 
-                ? 'bg-white/20 border-white/40 hover:bg-white/30' 
-                : 'bg-blue-100/20 border-blue-300/40 hover:bg-blue-100/30'
+            relative w-12 h-12 rounded-lg border-2 transition-all duration-200 transform hover:scale-110
+            ${isDeciduous 
+              ? 'bg-white/20 border-white/40' 
+              : 'bg-blue-100/20 border-blue-300/40'
             }
           `}
-          title={`Dente ${toothNumber} ${isDeciduous ? '(Decíduo)' : '(Permanente)'} ${conditionData ? `- ${conditionData.label}` : ''}`}
         >
-          {/* Representação visual do dente */}
-          <div className="absolute inset-1 rounded-md bg-white/10 flex items-center justify-center">
-            {conditionData && (
-              <span className="text-white font-bold text-lg">
-                {conditionData.symbol}
-              </span>
-            )}
-          </div>
-          
           {/* Superfícies do dente */}
-          <div className="absolute inset-0 grid grid-cols-3 grid-rows-3 gap-0.5 p-1">
-            {/* Vestibular */}
-            <div className="col-span-3 bg-white/5 rounded-t-md"></div>
-            {/* Mesial, Oclusal, Distal */}
-            <div className="bg-white/5"></div>
-            <div className="bg-white/5"></div>
-            <div className="bg-white/5"></div>
-            {/* Lingual */}
-            <div className="col-span-3 bg-white/5 rounded-b-md"></div>
+          <div className="grid grid-cols-3 grid-rows-3 w-full h-full">
+            <div className="col-span-1 row-span-1"></div> {/* Top-left empty */}
+            <div 
+              className={`col-span-1 row-span-1 flex items-center justify-center cursor-pointer 
+                ${getSurfaceCondition(toothNumber, 'vestibular') ? condicoes[getSurfaceCondition(toothNumber, 'vestibular')].color : 'hover:bg-white/10'}`}
+              onClick={() => handleSurfaceClick(toothNumber, 'vestibular')}
+              title="Vestibular"
+            ></div>
+            <div className="col-span-1 row-span-1"></div> {/* Top-right empty */}
+
+            <div 
+              className={`col-span-1 row-span-1 flex items-center justify-center cursor-pointer 
+                ${getSurfaceCondition(toothNumber, 'mesial') ? condicoes[getSurfaceCondition(toothNumber, 'mesial')].color : 'hover:bg-white/10'}`}
+              onClick={() => handleSurfaceClick(toothNumber, 'mesial')}
+              title="Mesial"
+            ></div>
+            <div 
+              className={`col-span-1 row-span-1 flex items-center justify-center cursor-pointer 
+                ${getSurfaceCondition(toothNumber, 'oclusal') ? condicoes[getSurfaceCondition(toothNumber, 'oclusal')].color : 'hover:bg-white/10'}`}
+              onClick={() => handleSurfaceClick(toothNumber, 'oclusal')}
+              title="Oclusal/Incisal"
+            ></div>
+            <div 
+              className={`col-span-1 row-span-1 flex items-center justify-center cursor-pointer 
+                ${getSurfaceCondition(toothNumber, 'distal') ? condicoes[getSurfaceCondition(toothNumber, 'distal')].color : 'hover:bg-white/10'}`}
+              onClick={() => handleSurfaceClick(toothNumber, 'distal')}
+              title="Distal"
+            ></div>
+
+            <div className="col-span-1 row-span-1"></div> {/* Bottom-left empty */}
+            <div 
+              className={`col-span-1 row-span-1 flex items-center justify-center cursor-pointer 
+                ${getSurfaceCondition(toothNumber, 'lingual') ? condicoes[getSurfaceCondition(toothNumber, 'lingual')].color : 'hover:bg-white/10'}`}
+              onClick={() => handleSurfaceClick(toothNumber, 'lingual')}
+              title="Lingual"
+            ></div>
+            <div className="col-span-1 row-span-1"></div> {/* Bottom-right empty */}
           </div>
-        </button>
+        </div>
       </div>
     );
   };
@@ -123,7 +140,7 @@ const MapaDentalAvancado = ({ selectedTeeth = [], onTeethChange, observations = 
           </Button>
         </CardTitle>
         <p className="text-emerald-100 text-sm">
-          Selecione uma condição e clique nos dentes para marcar
+          Selecione uma condição e clique nas superfícies dos dentes para marcar
         </p>
       </CardHeader>
       
@@ -181,7 +198,7 @@ const MapaDentalAvancado = ({ selectedTeeth = [], onTeethChange, observations = 
             <div className="border-t border-white/20 flex-1"></div>
             <div className="mx-4 p-2 bg-white/10 rounded-lg">
               <img 
-                src="/src/assets/odontograma.jpg" 
+                src="/ODONTOGRAME.jpg" 
                 alt="Referência Odontograma" 
                 className="w-16 h-10 object-cover rounded opacity-70"
               />
@@ -244,10 +261,10 @@ const MapaDentalAvancado = ({ selectedTeeth = [], onTeethChange, observations = 
                     <div className="flex flex-wrap gap-1">
                       {teethWithCondition.map(item => (
                         <span
-                          key={item.tooth}
+                          key={item.key}
                           className="bg-white/20 text-white px-2 py-1 rounded text-xs font-medium"
                         >
-                          {item.tooth}
+                          {item.tooth} ({item.surface})
                         </span>
                       ))}
                     </div>
@@ -274,3 +291,4 @@ const MapaDentalAvancado = ({ selectedTeeth = [], onTeethChange, observations = 
 };
 
 export default MapaDentalAvancado;
+
